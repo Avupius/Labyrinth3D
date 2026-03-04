@@ -7,7 +7,8 @@ public class SensorInputHandler : MonoBehaviour
     [SerializeField] private float sensitivity = 1.0f;
     [SerializeField] private bool calibrateOnStart = true;
     [SerializeField] private float smoothing = 5f;
-    [SerializeField] private float deadzone = 0.1f;
+    [SerializeField] private float deadzonePositive = 0.1f;  // Für positive Werte (vorwärts)
+    [SerializeField] private float deadzoneNegative = 0.3f;  // Für negative Werte (rückwärts) - leichter zu triggern
 
     private Vector3 accelerationOffset = Vector3.zero;
     private Vector3 tiltSmoothed = Vector3.zero;
@@ -43,6 +44,14 @@ public class SensorInputHandler : MonoBehaviour
         {
             Calibrate();
         }
+        
+        // FALLBACK: Wenn Kalibrierung fehlschlägt, manuell setzen
+        if (Mathf.Approximately(accelerationOffset.magnitude, 0f))
+        {
+            Debug.LogWarning("Kalibrierung fehlgeschlagen! Setze Fallback-Offset");
+            accelerationOffset = new Vector3(0f, -9.81f, 0f);
+            isCalibrated = true;
+        }
     }
 
     void Update()
@@ -64,10 +73,14 @@ public class SensorInputHandler : MonoBehaviour
         // Kalibrierungs-Offset abziehen (entfernt die Gravity-Komponente)
         Vector3 adjustedAccel = rawAccel - accelerationOffset;
 
-        // Deadzone anwenden (ignoriert kleine Werte)
-        if (Mathf.Abs(adjustedAccel.x) < deadzone)
+        // Deadzone anwenden - asymmetrisch für Z (rückwärts leichter)
+        if (Mathf.Abs(adjustedAccel.x) < deadzonePositive)
             adjustedAccel.x = 0f;
-        if (Mathf.Abs(adjustedAccel.z) < deadzone)
+        
+        // Z-Achse: unterschiedliche Deadzone für positive und negative Werte
+        if (adjustedAccel.z > 0 && adjustedAccel.z < deadzonePositive)
+            adjustedAccel.z = 0f;
+        else if (adjustedAccel.z < 0 && adjustedAccel.z > -deadzoneNegative)
             adjustedAccel.z = 0f;
         
         // Z-Achse invertieren (damit negative Neigung nach hinten geht)
@@ -118,9 +131,15 @@ public class SensorInputHandler : MonoBehaviour
         Debug.Log("Sensitivity gesetzt auf: " + sensitivity);
     }
 
-    public void SetDeadzone(float newDeadzone)
+    public void SetDeadzonePositive(float newDeadzone)
     {
-        deadzone = Mathf.Clamp(newDeadzone, 0f, 1f);
-        Debug.Log("Deadzone gesetzt auf: " + deadzone);
+        deadzonePositive = Mathf.Clamp(newDeadzone, 0f, 1f);
+        Debug.Log("Deadzone Positive gesetzt auf: " + deadzonePositive);
+    }
+
+    public void SetDeadzoneNegative(float newDeadzone)
+    {
+        deadzoneNegative = Mathf.Clamp(newDeadzone, 0f, 1f);
+        Debug.Log("Deadzone Negative gesetzt auf: " + deadzoneNegative);
     }
 }
