@@ -1,0 +1,219 @@
+{
+    "m_SelectedDeviceId": "RZCR308103T",
+    "m_SelectedProcess": {
+        "deviceId": "RZCR308103T",
+        "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+        "processId": 9550,
+        "exited": false
+    },
+    "m_SelectedPriority": 0,
+    "m_KnownProcessesForSerialization": [
+        {
+            "deviceId": "23afb203",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 2788,
+            "exited": true
+        },
+        {
+            "deviceId": "23afb203",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 8016,
+            "exited": true
+        },
+        {
+            "deviceId": "23afb203",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 7025,
+            "exited": true
+        },
+        {
+            "deviceId": "23afb203",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 20884,
+            "exited": true
+        },
+        {
+            "deviceId": "RZCR308103T",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 11533,
+            "exited": false
+        },
+        {
+            "deviceId": "RZCR308103T",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 15837,
+            "exited": false
+        },
+        {
+            "deviceId": "RZCR308103T",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 21631,
+            "exited": false
+        },
+        {
+            "deviceId": "RZCR308103T",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 24528,
+            "exited": false
+        },
+        {
+            "deviceId": "RZCR308103T",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 5106,
+            "exited": false
+        },
+        {
+            "deviceId": "RZCR308103T",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 24119,
+            "exited": false
+        },
+        {
+            "deviceId": "RZCR308103T",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 25185,
+            "exited": false
+        },
+        {
+            "deviceId": "RZCR308103T",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 26345,
+            "exited": false
+        },
+        {
+            "deviceId": "RZCR308103T",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 27361,
+            "exited": false
+        },
+        {
+            "deviceId": "RZCR308103T",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 29019,
+            "exited": false
+        },
+        {
+            "deviceId": "RZCR308103T",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 3002,
+            "exited": false
+        },
+        {
+            "deviceId": "RZCR308103T",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 6326,
+            "exited": false
+        },
+        {
+            "deviceId": "RZCR308103T",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 6940,
+            "exited": false
+        },
+        {
+            "deviceId": "RZCR308103T",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 7398,
+            "exited": false
+        },
+        {
+            "deviceId": "RZCR308103T",
+            "name": "com.UnityTechnologies.UniversalMobile3DTemplate",
+            "processId": 9550,
+            "exited": false
+        }
+    ],
+    "m_Tags": {
+        "m_Entries": [
+            {
+                "m_Name": "Filter by all listed tags",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "No Filter",
+                "m_Selected": true
+            },
+            {
+                "m_Name": "",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "Tag Control...",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "Unity",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "CRASH",
+                "m_Selected": false
+            }
+        ]
+    },
+    "m_ExtraWindowState": {
+        "Type": 0,
+        "Height": 0.0
+    },
+    "m_MemoryViewerState": {
+        "MemoryWindowWidth": 170.0,
+        "MemoryTypeEnabled": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+        ],
+        "MemoryGroup": 2,
+        "AutoCapture": true
+    },
+    "m_FilterOptions": {
+        "m_Filter": "",
+        "m_UseRegularExpressions": false,
+        "m_MatchCase": false
+    },
+    "m_SymbolPaths": [],
+    "m_CaptureVideoSettings": {
+        "TimeLimitEnabled": false,
+        "TimeLimit": 180,
+        "VideoSizeEnabled": false,
+        "VideoSizeX": 1280,
+        "VideoSizeY": 720,
+        "BitRateEnabled": false,
+        "BitRateK": 20000,
+        "DisplayIdEnabled": false,
+        "DisplayId": ""
+    },
+    "m_ScreenCaptureSettings": {
+        "Mode": 0,
+        "m_LastSaveLocation": [
+            "C:\\Users\\cezar\\git\\LabyrinthGame\\My project",
+            "C:\\Users\\cezar\\git\\LabyrinthGame\\My project"
+        ]
+    },
+    "m_QueryLayoutSettings": {
+        "LastLayoutSaveLocation": "",
+        "LastScreenshotSaveLocation": ""
+    },
+    "m_InputSettings": {
+        "ShiftModifier": false,
+        "SendText": "",
+        "PosixKillSignal": 0,
+        "TargetProcess": {
+            "deviceId": "",
+            "name": "",
+            "processId": 0,
+            "exited": false
+        }
+    },
+    "m_AutoScroll": 2
+}
