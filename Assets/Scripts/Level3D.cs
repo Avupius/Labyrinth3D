@@ -18,6 +18,12 @@ public class Level : MonoBehaviour
         }
     }
     
+    public void SetStartPosition(Transform newStartPos)
+    {
+        startPosition = newStartPos;
+        Debug.Log("StartPosition gesetzt zu: " + newStartPos.position);
+    }
+    
     public Vector3 GetStartPosition()
     {
         return startPosition != null ? startPosition.position : Vector3.zero;

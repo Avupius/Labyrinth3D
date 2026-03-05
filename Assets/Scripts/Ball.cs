@@ -67,6 +67,14 @@ public class Ball : MonoBehaviour
     }
     
     /// <summary>
+    /// Gibt die aktuelle Position des Balls zurueck
+    /// </summary>
+    public Vector3 GetPosition()
+    {
+        return transform.position;
+    }
+   
+    /// <summary>
     /// Setzt den Ball zur Startposition zurueck
     /// </summary>
     public void ResetPosition(Vector3 startPos)

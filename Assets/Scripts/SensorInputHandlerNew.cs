@@ -9,6 +9,7 @@ public class SensorInputHandler : MonoBehaviour
     [SerializeField] private float smoothing = 5f;
     [SerializeField] private float deadzonePositive = 0.1f;  // Für positive Werte (vorwärts)
     [SerializeField] private float deadzoneNegative = 0.3f;  // Für negative Werte (rückwärts) - leichter zu triggern
+    [SerializeField] private float zAxisOffset = 0.5f;  // Verschiebt den Nullpunkt der Z-Achse nach vorne (positiv)
 
     private Vector3 accelerationOffset = Vector3.zero;
     private Vector3 tiltSmoothed = Vector3.zero;
@@ -45,7 +46,7 @@ public class SensorInputHandler : MonoBehaviour
             Calibrate();
         }
         
-        // FALLBACK: Wenn Kalibrierung fehlschlägt, manuell setzen
+        // FALLBACK: Wenn Kalibrierung fehlschlaegt, manuell setzen
         if (Mathf.Approximately(accelerationOffset.magnitude, 0f))
         {
             Debug.LogWarning("Kalibrierung fehlgeschlagen! Setze Fallback-Offset");
@@ -73,11 +74,11 @@ public class SensorInputHandler : MonoBehaviour
         // Kalibrierungs-Offset abziehen (entfernt die Gravity-Komponente)
         Vector3 adjustedAccel = rawAccel - accelerationOffset;
 
-        // Deadzone anwenden - asymmetrisch für Z (rückwärts leichter)
+        // Deadzone anwenden - asymmetrisch fuer Z (rueckwaerts leichter)
         if (Mathf.Abs(adjustedAccel.x) < deadzonePositive)
             adjustedAccel.x = 0f;
         
-        // Z-Achse: unterschiedliche Deadzone für positive und negative Werte
+        // Z-Achse: unterschiedliche Deadzone fuer positive und negative Werte
         if (adjustedAccel.z > 0 && adjustedAccel.z < deadzonePositive)
             adjustedAccel.z = 0f;
         else if (adjustedAccel.z < 0 && adjustedAccel.z > -deadzoneNegative)
@@ -85,6 +86,9 @@ public class SensorInputHandler : MonoBehaviour
         
         // Z-Achse invertieren (damit negative Neigung nach hinten geht)
         adjustedAccel.z = -adjustedAccel.z;
+        
+        // Z-Achsen Offset anwenden (verschiebt den Nullpunkt nach vorne/positiv)
+        adjustedAccel.z += zAxisOffset;
 
         // Sensitivity anwenden
         adjustedAccel *= sensitivity;
@@ -141,5 +145,11 @@ public class SensorInputHandler : MonoBehaviour
     {
         deadzoneNegative = Mathf.Clamp(newDeadzone, 0f, 1f);
         Debug.Log("Deadzone Negative gesetzt auf: " + deadzoneNegative);
+    }
+
+    public void SetZAxisOffset(float newOffset)
+    {
+        zAxisOffset = newOffset;
+        Debug.Log("Z-Achsen Offset gesetzt auf: " + zAxisOffset);
     }
 }
