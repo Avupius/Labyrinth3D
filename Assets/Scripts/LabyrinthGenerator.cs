@@ -8,30 +8,37 @@ public class LabyrinthGenerator : MonoBehaviour
     [SerializeField] private float cellSize = 2f;
     [SerializeField] private float wallHeight = 2f;
     
+    [Header("Loecher Einstellungen")]
+    [SerializeField] private int holeCount = 3;
+    [SerializeField] private float holeRadius = 0.8f;
+    [SerializeField] private int safeZoneRadiusSpawn = 3;
+    [SerializeField] private int safeZoneRadiusExit = 3;
+    
     [Header("Materialien")]
     [SerializeField] private Material wallMaterial;
     [SerializeField] private Material floorMaterial;
     [SerializeField] private Material exitMaterial;
+    [SerializeField] private Material holeMaterial;
     
     [Header("Objekt-Referenzen")]
     [SerializeField] private Transform parentTransform;
-    [SerializeField] private Transform startPositionTransform; // Referenz zu Level
+    [SerializeField] private Level level;
     
     private bool[,] maze;
     private GameObject startPositionObject;
+    private GameObject exitPositionObject;
     private GameObject wallContainer;
     private GameObject floorContainer;
+    private GameObject holesContainer;
 
     public void GenerateMaze()
     {
         // Alte Objekte loeschen
         if (wallContainer != null) DestroyImmediate(wallContainer);
         if (floorContainer != null) DestroyImmediate(floorContainer);
+        if (holesContainer != null) DestroyImmediate(holesContainer);
         if (startPositionObject != null) DestroyImmediate(startPositionObject);
-        
-        {
-            
-        }
+        if (exitPositionObject != null) DestroyImmediate(exitPositionObject);
         
         // Container erstellen
         wallContainer = new GameObject("Walls");
@@ -42,7 +49,11 @@ public class LabyrinthGenerator : MonoBehaviour
         floorContainer.transform.parent = parentTransform ?? transform;
         floorContainer.transform.localPosition = Vector3.zero;
         
-        // Labyrinth mit Recursive Backtracker generieren
+        holesContainer = new GameObject("Holes");
+        holesContainer.transform.parent = parentTransform ?? transform;
+        holesContainer.transform.localPosition = Vector3.zero;
+        
+        // Labyrinth generieren
         maze = new bool[width, height];
         InitializeMaze();
         GeneratePathRecursive(1, 1);
@@ -50,47 +61,29 @@ public class LabyrinthGenerator : MonoBehaviour
         // 3D-Objekte erstellen
         CreateFloor();
         CreateWalls();
-        CreateExit();
         CreateStartPosition();
+        CreateExit();
+        CreateHoles();
     }
-    
-    
-    private void CreateStartPosition()
-    {
-        startPositionObject = new GameObject("StartPosition");
-        startPositionObject.transform.parent = transform;
-        startPositionObject.transform.localPosition = new Vector3(
-            1 * cellSize,
-            1f,
-            1 * cellSize
-        );
-    
-        Debug.Log("StartPosition erstellt bei: " + startPositionObject.transform.position);
-    }
-
-    
     
     private void InitializeMaze()
     {
-        // Alle Zellen sind zuerst Waende
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                maze[x, y] = true; // true = Wand
+                maze[x, y] = true;
             }
         }
     }
     
     private void GeneratePathRecursive(int x, int y)
     {
-        maze[x, y] = false; // Aktueller Pfad oeffnen
+        maze[x, y] = false;
         
-        // Vier Richtungen: rechts, unten, links, oben
         int[] dx = { 2, 0, -2, 0 };
         int[] dy = { 0, 2, 0, -2 };
         
-        // Richtungen randomizieren
         int[] directions = { 0, 1, 2, 3 };
         ShuffleArray(directions);
         
@@ -99,10 +92,8 @@ public class LabyrinthGenerator : MonoBehaviour
             int nx = x + dx[dir];
             int ny = y + dy[dir];
             
-            // Grenzpruefung
             if (nx > 0 && nx < width - 1 && ny > 0 && ny < height - 1 && maze[nx, ny])
             {
-                // Wand dazwischen oeffnen
                 maze[x + dx[dir] / 2, y + dy[dir] / 2] = false;
                 GeneratePathRecursive(nx, ny);
             }
@@ -114,7 +105,6 @@ public class LabyrinthGenerator : MonoBehaviour
         for (int i = array.Length - 1; i > 0; i--)
         {
             int randomIndex = Random.Range(0, i + 1);
-            // Swap
             int temp = array[i];
             array[i] = array[randomIndex];
             array[randomIndex] = temp;
@@ -123,10 +113,8 @@ public class LabyrinthGenerator : MonoBehaviour
     
     private void CreateFloor()
     {
-        // Erstelle einen Cube fuer den Boden
         GameObject floorCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
         
-        // Entferne den Mesh Collider des Primitives
         Collider defaultCollider = floorCube.GetComponent<Collider>();
         if (defaultCollider != null)
             DestroyImmediate(defaultCollider);
@@ -148,12 +136,10 @@ public class LabyrinthGenerator : MonoBehaviour
         if (floorMaterial != null)
             floorCube.GetComponent<Renderer>().material = floorMaterial;
         
-        // BoxCollider fuer Physik
         BoxCollider collider = floorCube.AddComponent<BoxCollider>();
         collider.size = Vector3.one;
         collider.isTrigger = false;
         
-        // Rigidbody - WICHTIG: kinematic damit es nicht faellt
         Rigidbody rb = floorCube.AddComponent<Rigidbody>();
         rb.isKinematic = true;
         rb.constraints = RigidbodyConstraints.FreezeAll;
@@ -177,7 +163,6 @@ public class LabyrinthGenerator : MonoBehaviour
     {
         GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
         
-        // Entferne den default Collider
         Collider defaultCollider = wall.GetComponent<Collider>();
         if (defaultCollider != null)
             DestroyImmediate(defaultCollider);
@@ -194,26 +179,35 @@ public class LabyrinthGenerator : MonoBehaviour
         if (wallMaterial != null)
             wall.GetComponent<Renderer>().material = wallMaterial;
         
-        // BoxCollider fuer Physik - WICHTIG: nicht ist Trigger!
         BoxCollider collider = wall.AddComponent<BoxCollider>();
         collider.size = Vector3.one;
         collider.isTrigger = false;
         
-        // Rigidbody - kinematic damit Waende nicht herumfallen
         Rigidbody rb = wall.AddComponent<Rigidbody>();
         rb.isKinematic = true;
         rb.constraints = RigidbodyConstraints.FreezeAll;
     }
     
+    private void CreateStartPosition()
+    {
+        startPositionObject = new GameObject("StartPosition");
+        startPositionObject.transform.parent = transform;
+        startPositionObject.transform.localPosition = new Vector3(
+            1 * cellSize,
+            1f,
+            1 * cellSize
+        );
+    
+        Debug.Log("StartPosition erstellt bei: " + startPositionObject.transform.position);
+    }
+    
     private void CreateExit()
     {
-        // Exit in der oberen rechten Ecke
         int exitX = width - 2;
         int exitY = height - 4;
         
         GameObject exit = GameObject.CreatePrimitive(PrimitiveType.Cube);
         
-        // Entferne default Collider
         Collider defaultCollider = exit.GetComponent<Collider>();
         if (defaultCollider != null)
             DestroyImmediate(defaultCollider);
@@ -230,35 +224,162 @@ public class LabyrinthGenerator : MonoBehaviour
         if (exitMaterial != null)
             exit.GetComponent<Renderer>().material = exitMaterial;
         
-        // BoxCollider als TRIGGER
         BoxCollider triggerCollider = exit.AddComponent<BoxCollider>();
         triggerCollider.isTrigger = true;
         triggerCollider.size = Vector3.one;
         
-        // Script fuer Exit-Logik
         ExitTrigger exitScript = exit.AddComponent<ExitTrigger>();
-        
         exit.tag = "Exit";
+        
+        // Exit Position speichern
+        exitPositionObject = new GameObject("ExitPosition");
+        exitPositionObject.transform.parent = transform;
+        exitPositionObject.transform.localPosition = exit.transform.position;
+    }
+    
+    private void CreateHoles()
+    {
+        int holesCreated = 0;
+        int attempts = 0;
+        int maxAttempts = 200;
+        
+        while (holesCreated < holeCount && attempts < maxAttempts)
+        {
+            attempts++;
+            
+            int randomX = Random.Range(2, width - 2);
+            int randomY = Random.Range(2, height - 2);
+            
+            if (!maze[randomX, randomY])
+            {
+                // Pruefe Safe Zones
+                float distToSpawn = Vector3.Distance(
+                    new Vector3(randomX * cellSize, 0, randomY * cellSize),
+                    new Vector3(1 * cellSize, 0, 1 * cellSize)
+                );
+                
+                float distToExit = Vector3.Distance(
+                    new Vector3(randomX * cellSize, 0, randomY * cellSize),
+                    exitPositionObject.transform.position
+                );
+                
+                if (distToSpawn > safeZoneRadiusSpawn * cellSize && 
+                    distToExit > safeZoneRadiusExit * cellSize)
+                {
+                    CreateHole(randomX, randomY);
+                    holesCreated++;
+                }
+            }
+        }
+        
+        Debug.Log($"Loecher erstellt: {holesCreated}/{holeCount}");
+    }
+    
+    private void CreateHole(int x, int y)
+    {
+        // Bestimme Offset-Richtung zur Wand
+        Vector3 offsetDirection = GetOffsetTowardsNearestWall(x, y);
+        
+        // Verschiebe das Loch zur Wand hin
+        float offsetAmount = 0.4f;
+        Vector3 cellCenter = new Vector3(x * cellSize, 0.1f, y * cellSize);
+        Vector3 offsetPosition = cellCenter + offsetDirection * cellSize * offsetAmount;
+        
+        GameObject hole = new GameObject($"Hole_{x}_{y}");
+        hole.transform.parent = holesContainer.transform;
+        hole.transform.localPosition = offsetPosition;
+        
+        // Visualisierung
+        GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        DestroyImmediate(visual.GetComponent<Collider>());
+        visual.transform.parent = hole.transform;
+        visual.transform.localPosition = Vector3.zero;
+        visual.transform.localScale = new Vector3(holeRadius * 2, 0.1f, holeRadius * 2);
+        
+        if (holeMaterial != null)
+            visual.GetComponent<Renderer>().material = holeMaterial;
+        
+        // Trigger Collider
+        SphereCollider collider = hole.AddComponent<SphereCollider>();
+        collider.radius = holeRadius;
+        collider.isTrigger = true;
+    }
+
+    private Vector3 GetOffsetTowardsNearestWall(int x, int y)
+    {
+        int leftWallCount = 0;
+        int rightWallCount = 0;
+        int topWallCount = 0;
+        int bottomWallCount = 0;
+        
+        // Zaehle Waende in direkter Umgebung
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            if (x + dx >= 0 && x + dx < width && maze[x + dx, y])
+            {
+                if (dx < 0) leftWallCount++;
+                else if (dx > 0) rightWallCount++;
+            }
+        }
+        
+        for (int dy = -1; dy <= 1; dy++)
+        {
+            if (y + dy >= 0 && y + dy < height && maze[x, y + dy])
+            {
+                if (dy < 0) topWallCount++;
+                else if (dy > 0) bottomWallCount++;
+            }
+        }
+        
+        // Finde Hauptrichtung mit den meisten Waenden
+        int maxCount = Mathf.Max(leftWallCount, rightWallCount, topWallCount, bottomWallCount);
+        
+        if (maxCount == 0)
+        {
+            int rand = Random.Range(0, 4);
+            return rand switch
+            {
+                0 => Vector3.left,
+                1 => Vector3.right,
+                2 => Vector3.back,
+                _ => Vector3.forward,
+            };
+        }
+        
+        if (leftWallCount == maxCount) return Vector3.left;
+        if (rightWallCount == maxCount) return Vector3.right;
+        if (topWallCount == maxCount) return Vector3.back;
+        if (bottomWallCount == maxCount) return Vector3.forward;
+        
+        return Vector3.zero;
     }
     
     public Transform GetStartPosition()
     {
         return startPositionObject?.transform;
     }
+    
+    public Transform GetExitPosition()
+    {
+        return exitPositionObject?.transform;
+    }
 }
 
-
-
-// Einfaches Script fuer Exit-Trigger
 public class ExitTrigger : MonoBehaviour
 {
+    private GameManager gameManager;
+    
+    void Start()
+    {
+        gameManager = FindObjectOfType<GameManager>();
+    }
+    
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Ball"))
+        if (other.CompareTag("Ball") && gameManager != null)
         {
-            Debug.Log("Labyrinth geloest!");
-            // Hier kannst du deine eigene Logik einfuegen
-            // z.B. nächstes Level laden oder Score erhöhen
+            Debug.Log("Exit erreicht!");
+            gameManager.WinLevel();
         }
     }
 }

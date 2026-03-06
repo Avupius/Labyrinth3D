@@ -75,6 +75,17 @@ public class MenuManager : MonoBehaviour
         }
     }
 
+    public void QuitGame()
+    {
+        Debug.Log("Spiel wird beendet...");
+    
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+        #else
+                Application.Quit();
+        #endif
+    }
+    
     public void GameOver()
     {
         Debug.Log("Spiel vorbei - Menu wird wieder angezeigt");

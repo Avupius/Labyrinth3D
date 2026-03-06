@@ -78,7 +78,7 @@ public class GameManager : MonoBehaviour
         }
     }
     
-    void WinLevel()
+    public void WinLevel()
     {
         hasWon = true;
         isGameRunning = false;

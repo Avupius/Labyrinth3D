@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class SensorInputHandler : MonoBehaviour
+public class SensorInputHandlerBASE : MonoBehaviour
 {
     [Header("Sensor Settings")]
     [SerializeField] private float sensitivity = 1.0f;

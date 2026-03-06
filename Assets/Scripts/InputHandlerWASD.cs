@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class SensorInputHandlerOLD : MonoBehaviour
+public class SensorInputHandler : MonoBehaviour
 {
     [Header("Sensor Settings")]
     [SerializeField] private float sensitivity = 1.0f;
@@ -10,6 +10,7 @@ public class SensorInputHandlerOLD : MonoBehaviour
 
     private Vector3 accelerationOffset = Vector3.zero;
     private Vector3 tiltSmoothed = Vector3.zero;
+    private bool isEditorMode = false;
 
     void OnEnable()
     {
@@ -37,28 +38,35 @@ public class SensorInputHandlerOLD : MonoBehaviour
         Debug.Log("=== SensorInputHandler gestartet ===");
         Debug.Log("Accelerometer supported: " + SystemInfo.supportsAccelerometer);
 
-        
+        #if UNITY_EDITOR
+        isEditorMode = true;
+        Debug.Log("Editor-Modus aktiviert - verwende WASD zum Testen");
+        // Im Editor: accelerationOffset auf Null lassen, damit WASD direkt verwendet wird
+        accelerationOffset = Vector3.zero;
+        #else
+        isEditorMode = false;
         if (calibrateOnStart)
         {
             Calibrate();
         }
+        #endif
     }
 
     void Update()
     {
         Vector3 rawAccel = Vector3.zero;
 
-        /*#if UNITY_EDITOR
+        #if UNITY_EDITOR
         // Im Editor: WASD zum Testen (mit neuem Input System)
         var keyboard = Keyboard.current;
         if (keyboard != null)
         {
-            if (keyboard.wKey.isPressed) rawAccel.x = 5f;
-            if (keyboard.sKey.isPressed) rawAccel.x = -5f;
-            if (keyboard.dKey.isPressed) rawAccel.z = 5f;
-            if (keyboard.aKey.isPressed) rawAccel.z = -5f;
+            if (keyboard.wKey.isPressed) rawAccel.z = 1f;  // W = vorne (positiv Z)
+            if (keyboard.sKey.isPressed) rawAccel.z = -1f; // S = hinten (negativ Z)
+            if (keyboard.dKey.isPressed) rawAccel.x = 1f;  // D = rechts (positiv X)
+            if (keyboard.aKey.isPressed) rawAccel.x = -1f; // A = links (negativ X)
         }
-        #else*/
+        #else
         // Auf Android: Neue InputSystem Accelerometer API
         if (Accelerometer.current != null)
         {
@@ -66,14 +74,18 @@ public class SensorInputHandlerOLD : MonoBehaviour
         }
         else
         {
-            rawAccel = Input.acceleration; // Fallback
+            rawAccel = Input.acceleration; // Fallback zur alten API
         }
-        //#endif
+        #endif
 
-        // Kalibrierungs-Offset abziehen
-        Vector3 adjustedAccel = rawAccel - accelerationOffset;
+        // Nur im Device-Modus Kalibrierungs-Offset abziehen
+        Vector3 adjustedAccel = rawAccel;
+        if (!isEditorMode)
+        {
+            adjustedAccel -= accelerationOffset;
+        }
 
-        // Optional: Sensitivity wirklich anwenden
+        // Sensitivity anwenden
         adjustedAccel *= sensitivity;
 
         // Smoothing
@@ -103,7 +115,6 @@ public class SensorInputHandlerOLD : MonoBehaviour
         tiltSmoothed = Vector3.zero;
         Debug.Log("SensorInputHandler kalibriert, Offset: " + accelerationOffset);
     }
-
 
     public void SetSensitivity(float newSensitivity)
     {
