@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 public class LabyrinthGenerator : MonoBehaviour
 {
@@ -30,6 +31,10 @@ public class LabyrinthGenerator : MonoBehaviour
     private GameObject wallContainer;
     private GameObject floorContainer;
     private GameObject holesContainer;
+    
+    // WICHTIG: Speichere alle Hole-Trigger
+    private List<HoleTrigger> holeTriggers = new List<HoleTrigger>();
+    private List<Vector3> holePositions = new List<Vector3>();
 
     public void GenerateMaze()
     {
@@ -39,6 +44,10 @@ public class LabyrinthGenerator : MonoBehaviour
         if (holesContainer != null) DestroyImmediate(holesContainer);
         if (startPositionObject != null) DestroyImmediate(startPositionObject);
         if (exitPositionObject != null) DestroyImmediate(exitPositionObject);
+        
+        // Listen zurücksetzen
+        holeTriggers.Clear();
+        holePositions.Clear();
         
         // Container erstellen
         wallContainer = new GameObject("Walls");
@@ -64,6 +73,14 @@ public class LabyrinthGenerator : MonoBehaviour
         CreateStartPosition();
         CreateExit();
         CreateHoles();
+        
+        // Übergebe Hole-Daten an Level
+        if (level != null)
+        {
+            level.SetHoleTriggers(holeTriggers);
+            level.SetHolePositions(holePositions);
+            Debug.Log($"LabyrinthGenerator: {holeTriggers.Count} HoleTriggers an Level übergeben");
+        }
     }
     
     private void InitializeMaze()
@@ -289,6 +306,9 @@ public class LabyrinthGenerator : MonoBehaviour
         hole.transform.parent = holesContainer.transform;
         hole.transform.localPosition = offsetPosition;
         
+        // Speichere die Position
+        holePositions.Add(hole.transform.position);
+        
         // Visualisierung
         GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         DestroyImmediate(visual.GetComponent<Collider>());
@@ -303,6 +323,12 @@ public class LabyrinthGenerator : MonoBehaviour
         SphereCollider collider = hole.AddComponent<SphereCollider>();
         collider.radius = holeRadius;
         collider.isTrigger = true;
+        
+        // WICHTIG: HoleTrigger Script hinzufügen
+        HoleTrigger holeTrigger = hole.AddComponent<HoleTrigger>();
+        holeTriggers.Add(holeTrigger);
+        
+        Debug.Log($"Hole erstellt bei {hole.transform.position} mit HoleTrigger");
     }
 
     private Vector3 GetOffsetTowardsNearestWall(int x, int y)
@@ -362,6 +388,16 @@ public class LabyrinthGenerator : MonoBehaviour
     public Transform GetExitPosition()
     {
         return exitPositionObject?.transform;
+    }
+    
+    public List<HoleTrigger> GetHoleTriggers()
+    {
+        return holeTriggers;
+    }
+    
+    public List<Vector3> GetHolePositions()
+    {
+        return holePositions;
     }
 }
 
