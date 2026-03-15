@@ -5,29 +5,34 @@ public class Level : MonoBehaviour
 {
     [SerializeField] private Transform startPosition;
     [SerializeField] private Transform exitPosition;
-    [SerializeField] private float exitSize = new Vector3(1, 0.5f, 1).x;
     
     // Neue Hole-Verwaltung
     private List<HoleTrigger> holeTriggers = new List<HoleTrigger>();
     private List<Vector3> holePositions = new List<Vector3>();
-    private float holeRadius = 0.8f;
+    private static readonly Vector3 EXIT_SIZE = new Vector3(1, 0.5f, 1);
     
     void Start()
     {
         if (startPosition == null)
-            Debug.LogError("Level3D: Start Position nicht gesetzt!");
+            Debug.LogError("Level: Start Position nicht gesetzt!");
         else
         {
-            Debug.Log("Level3D: Start Position = " + startPosition.position);
+            Debug.Log("Level: Start Position = " + startPosition.position);
         }
     }
     
+    /// <summary>
+    /// Setzt eine neue Start-Position.
+    /// </summary>
     public void SetStartPosition(Transform newStartPos)
     {
         startPosition = newStartPos;
         Debug.Log("StartPosition gesetzt zu: " + newStartPos.position);
     }
     
+    /// <summary>
+    /// Gibt die Start-Position des Levels zurueck.
+    /// </summary>
     public Vector3 GetStartPosition()
     {
         return startPosition != null ? startPosition.position : Vector3.zero;
@@ -52,26 +57,6 @@ public class Level : MonoBehaviour
     }
     
     /// <summary>
-    /// Prüft ob Ball in eines der generierten Löcher faellt (nur visuell/Debug)
-    /// Die echte Erkennung erfolgt über HoleTrigger Collider!
-    /// </summary>
-    public bool CheckBallInHole(Vector3 ballPosition)
-    {
-        // Prüfe gegen alle Hole-Positionen
-        foreach (Vector3 holePos in holePositions)
-        {
-            float distance = Vector3.Distance(ballPosition, holePos);
-            if (distance < holeRadius)
-            {
-                Debug.Log($"Ball ist nahe bei Loch: {distance}m");
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    /// <summary>
     /// Prüft ob Ball am Exit ist
     /// </summary>
     public bool CheckBallAtExit(Vector3 ballPosition)
@@ -79,12 +64,11 @@ public class Level : MonoBehaviour
         if (exitPosition == null) return false;
         
         Vector3 exitPos = exitPosition.position;
-        Vector3 exitSize3D = new Vector3(1, 0.5f, 1);
         
         bool isInExit =
-            Mathf.Abs(ballPosition.x - exitPos.x) < exitSize3D.x / 2f &&
-            Mathf.Abs(ballPosition.y - exitPos.y) < exitSize3D.y / 2f &&
-            Mathf.Abs(ballPosition.z - exitPos.z) < exitSize3D.z / 2f;
+            Mathf.Abs(ballPosition.x - exitPos.x) < EXIT_SIZE.x / 2f &&
+            Mathf.Abs(ballPosition.y - exitPos.y) < EXIT_SIZE.y / 2f &&
+            Mathf.Abs(ballPosition.z - exitPos.z) < EXIT_SIZE.z / 2f;
         
         return isInExit;
     }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 /// <summary>
 /// Wird an jedes generierte Loch angehängt.
@@ -6,51 +7,52 @@
 /// </summary>
 public class HoleTrigger : MonoBehaviour
 {
-    private GameManager gameManager;
+    [SerializeField] private GameManager gameManager;
     private bool hasTriggered = false;
 
-    void Start()
+    void Awake()
     {
-        gameManager = FindObjectOfType<GameManager>();
-        
-        if (gameManager == null)
-        {
-            Debug.LogError("HoleTrigger: GameManager nicht gefunden!");
-        }
-        
-        // Stelle sicher dass dieser Collider ein Trigger ist
+        // HoleTrigger sollte auf einem GameObject mit Collider (z.B. SphereCollider) liegen, der als Trigger eingestellt ist.
+        // Stelle sicher dass der Collider als Trigger eingestellt ist, falls es nicht bereits so ist.
         Collider col = GetComponent<Collider>();
-        if (col != null && !col.isTrigger)
+        if (col == null)
+        {
+            Debug.LogError("HoleTrigger: Kein Collider gefunden! Bitte füge einen Collider hinzu.");
+        }
+        else if (!col.isTrigger)
         {
             col.isTrigger = true;
             Debug.Log("HoleTrigger: Collider wurde auf Trigger gesetzt");
         }
     }
+    void Start()
+    {
+        gameManager = FindFirstObjectByType<GameManager>();
+        if (gameManager == null)
+        {
+            Debug.LogError("HoleTrigger: GameManager nicht gefunden! Kein GameManager in der Szene vorhanden.");
+        }
+        
+    }
 
     private void OnTriggerEnter(Collider other)
     {
-        // Nur einmal pro "Fall" triggern
-        if (hasTriggered)
-            return;
-
         // Prüfe ob der Ball in das Loch fällt
-        if (other.CompareTag("Ball"))
-        {
-            hasTriggered = true;
-            Debug.Log("HoleTrigger: Ball faellt in Loch bei " + transform.position);
+        if (hasTriggered || !other.CompareTag("Ball"))
+            return;
+        
+        
+        Debug.Log("HoleTrigger: Ball faellt in Loch bei " + transform.position);
+        hasTriggered = true;
+        gameManager?.BallFellInHole();
             
-            if (gameManager != null)
-            {
-                gameManager.BallFellInHole();
-            }
-            
-            // Reset Flag nach kurzer Zeit für nächsten "Fall"
-            Invoke("ResetTrigger", 0.5f);
-        }
+        // Reset Flag nach kurzer Zeit für nächsten "Fall"
+        StartCoroutine(ResetTrigger(0.5f));
     }
-
-    private void ResetTrigger()
+    
+    private IEnumerator ResetTrigger(float delay)
     {
+        yield return new WaitForSeconds(delay);
         hasTriggered = false;
     }
 

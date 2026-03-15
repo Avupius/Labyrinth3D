@@ -21,31 +21,27 @@ public class UIManager : MonoBehaviour
     
     [Header("Settings")]
     [SerializeField] private float uiFadeInDuration = 0.5f;
+
+    [Header("Manager References")] 
+    [SerializeField] private GameManager gameManager;
+    [SerializeField ] private ScoreManager scoreManager;
     
-    private GameManager gameManager;
-    private ScoreManager scoreManager;
     private float displayTimer = 0f;
     private bool isGameActive = false;
     
     void Start()
     {
-        // Finde GameManager
-        gameManager = FindObjectOfType<GameManager>();
         if (gameManager == null)
         {
-            Debug.LogError("UIManager: GameManager nicht gefunden!");
+            Debug.LogError("UIManager: GameManager wurde nicht gesetzt");
+            return;
         }
-        
-        // Finde oder erstelle ScoreManager
-        scoreManager = FindObjectOfType<ScoreManager>();
+
         if (scoreManager == null)
         {
-            GameObject scoreManagerObj = new GameObject("ScoreManager");
-            scoreManager = scoreManagerObj.AddComponent<ScoreManager>();
-            Debug.Log("UIManager: ScoreManager erstellt");
+            Debug.LogError("UIManager: ScoreManager wurde nicht gesetzt");
         }
         
-        // Initialisiere UI
         ShowMenuUI();
         displayTimer = 0f;
         isGameActive = false;

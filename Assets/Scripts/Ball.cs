@@ -1,5 +1,9 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// Verwaltet die Physik und Bewegung des Balls basierend auf Sensor-Input.
+/// Kommuniziert mit SensorInputHandler fuer Beschleunigungsdaten.
+/// </summary>
 [RequireComponent(typeof(Rigidbody))]
 public class Ball : MonoBehaviour
 {
@@ -12,76 +16,96 @@ public class Ball : MonoBehaviour
     [SerializeField] private SensorInputHandler sensorInput;
     
     private Rigidbody rb;
+    private bool isInitialized = false;
     
     void Awake()
     {
-        rb = GetComponent<Rigidbody>();
-        
-        if (rb == null)
-        {
-            Debug.LogError("Ball3D: Rigidbody nicht gefunden!");
-            enabled = false;
-        }
+        InitializeRigidbody();
     }
     
     void Start()
     {
         if (sensorInput == null)
         {
-            sensorInput = FindObjectOfType<SensorInputHandler>();
-            if (sensorInput == null)
-            {
-                Debug.LogError("Ball3D: SensorInputHandler nicht gefunden!");
-            }
+            Debug.LogError("Ball: SensorInputHandler nicht gesetzt");
+            return;
         }
         
-        // Physik-Settings
-        rb.linearDamping = dragFriction;
-        rb.angularDamping = dragFriction;
+        if (rb == null)
+        {
+            Debug.LogError("Ball: Rigidbody nicht gefunden!");
+            return;
+        }
         
-        Debug.Log("Ball3D initialisiert");
+        ConfigurePhysics();
+        isInitialized = true;
+        
+        Debug.Log("Ball: Ball initialisiert");
     }
     
    void FixedUpdate()
     {
-        if (sensorInput == null)
+        if (!isInitialized || sensorInput == null)
             return;
         
+        ApplyTiltForce();
+        LimitVelocity();
+    }
+
+    private void ApplyTiltForce()
+    {
         Vector3 tiltInput = sensorInput.GetTiltDirection();
-        
-        // Direkt X und Z verwenden
+        // Wende nur horizontale Kraft an (X und Z). Y ist 0, da Gravität die vertikale Bewegung steuert
         Vector3 force = new Vector3(tiltInput.x, 0f, tiltInput.z) * forceMultiplier;
         
         rb.AddForce(force, ForceMode.Acceleration);
+    }
+
+    private void LimitVelocity()
+    {
+        float currentVelocity = rb.linearVelocity.magnitude;
         
-        if (rb.linearVelocity.magnitude > maxVelocity)
+        if (currentVelocity > maxVelocity)
         {
             rb.linearVelocity = rb.linearVelocity.normalized * maxVelocity;
         }
+    }
+    private void InitializeRigidbody()
+    {
+        rb = GetComponent<Rigidbody>();
         
-        // Debug
-        if (Time.frameCount % 60 == 0)
+        if (rb == null)
         {
-            Debug.Log($"Ball Velocity: {rb.linearVelocity.magnitude:F2} | Tilt: {tiltInput}");
+            Debug.LogError("Ball: Rigidbody nicht gefunden!");
+            enabled = false;
         }
     }
     
+    private void ConfigurePhysics()
+    {
+        // Physik-Settings
+        rb.linearDamping = dragFriction;
+        rb.angularDamping = dragFriction;
+    }
+   
     /// <summary>
-    /// Gibt die aktuelle Position des Balls zurueck
+    /// Gibt die aktuelle Position des Balls zurück
     /// </summary>
+    /// <returns>Welt-Position des Balls</returns>
     public Vector3 GetPosition()
     {
         return transform.position;
     }
    
     /// <summary>
-    /// Setzt den Ball zur Startposition zurueck
+    /// Setzt den Ball zur Startposition zurück
     /// </summary>
+    /// <param name="startPos">Zielposition für Reset</param>
     public void ResetPosition(Vector3 startPos)
     {
         transform.position = startPos;
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
-        Debug.Log("Ball zurueckgesetzt zu: " + startPos);
+        Debug.Log("Ball zurückgesetzt zu: " + startPos);
     }
 }

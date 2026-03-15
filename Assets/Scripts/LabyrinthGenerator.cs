@@ -24,6 +24,7 @@ public class LabyrinthGenerator : MonoBehaviour
     [Header("Objekt-Referenzen")]
     [SerializeField] private Transform parentTransform;
     [SerializeField] private Level level;
+    [SerializeField] private ExitTrigger exitTrigger;
     
     private bool[,] maze;
     private GameObject startPositionObject;
@@ -398,24 +399,5 @@ public class LabyrinthGenerator : MonoBehaviour
     public List<Vector3> GetHolePositions()
     {
         return holePositions;
-    }
-}
-
-public class ExitTrigger : MonoBehaviour
-{
-    private GameManager gameManager;
-    
-    void Start()
-    {
-        gameManager = FindObjectOfType<GameManager>();
-    }
-    
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Ball") && gameManager != null)
-        {
-            Debug.Log("Exit erreicht!");
-            gameManager.WinLevel();
-        }
     }
 }

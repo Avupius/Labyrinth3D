@@ -37,6 +37,8 @@ sysinfo.txt
 # Builds
 *.apk
 
+#Unity Specific Folde (not important for import)
 /game_*/
 /Build_*/
 /Logs/
+/UserSettings/

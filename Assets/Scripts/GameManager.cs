@@ -10,25 +10,36 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Level level;
     [SerializeField] private MenuManager menuManager;
     [SerializeField] private UIManager uiManager;
+
+    private const float HOLE_RESTART_DELAY = 1.5f;
+    private const float WIN_MENU_DELAY = 1.5f;
     
     private float elapsedTime = 0f;
     private bool isGameRunning = false;
     private bool hasWon = false;
     
+    public bool IsGameRunning => isGameRunning;
+    public float ElapsedTime => elapsedTime;
+    
+
     void Start()
-    {
-        // Finde UIManager wenn nicht gesetzt
+    {   
+        ResetGameState();
+
         if (uiManager == null)
         {
-            uiManager = FindObjectOfType<UIManager>();
+            Debug.LogError("GameManager: UIManager nicht gesetzt");
+            return;
         }
         
-        // WICHTIG: Spiel startet NICHT automatisch!
-        isGameRunning = false;
-        hasWon = false;
-        elapsedTime = 0f;
-        
-        Debug.Log("GameManager: Bereit (wartet auf StartGame() vom Menu)");
+    }
+    void Update()
+    {
+        if (!isGameRunning || hasWon)
+            return;
+
+        UpdateGameTime();
+        CheckLevelCompletion();
     }
     
     /// <summary>
@@ -36,45 +47,40 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void StartGame()
     {
+        
+        if (ball == null || level == null)
+        {
+            Debug.Log("GameManager: Ball oder Level nicht gesetzt");
+            return;
+        }
+        
         isGameRunning = true;
         hasWon = false;
         elapsedTime = 0f;
         
-        if (ball != null && level != null)
-        {
-            ball.ResetPosition(level.GetStartPosition());
-            level.ResetHoleTriggers();
-            Debug.Log("Ball zur Startposition gesetzt");
-        }
+        InitializeLevel();
+        UpdateGameUI();
         
-        // Zeige Game-UI
+        Debug.Log("GameManager: Spiel gestartet!");
+    }
+
+    private void UpdateGameUI()
+    {
         if (uiManager != null)
         {
             uiManager.ShowGameUI();
             uiManager.ResetTimer();
         }
-        
-        Debug.Log("GameManager: Spiel gestartet!");
     }
     
-    void Update()
+    private void InitializeLevel()
     {
-        if (!isGameRunning || hasWon)
-            return;
-        
-        elapsedTime += Time.deltaTime;
-        
-        // Pruefen ob Ball Exit erreicht
-        if (level != null && level.CheckBallAtExit(ball.GetPosition()))
-        {
-            Debug.Log("GEWONNEN! Zeit: " + elapsedTime.ToString("F2") + "s");
-            WinLevel();
-            return;
-        }
+        ball.ResetPosition(level.GetStartPosition());
+        level.ResetHoleTriggers();
     }
     
     /// <summary>
-    /// Wird vom HoleTrigger aufgerufen wenn Ball in Loch faellt
+    /// Wird vom HoleTrigger aufgerufen, wenn der Ball in Loch fällt
     /// </summary>
     public void BallFellInHole()
     {
@@ -94,45 +100,50 @@ public class GameManager : MonoBehaviour
     void RestartLevel()
     {
         isGameRunning = false;
-        Debug.Log("GameManager: Level wird neu gestartet...");
-        Invoke("ResetBall", 1.5f);
+        // Verzögerung um UI-Animation zu zeigen
+        Invoke("ResetBall", HOLE_RESTART_DELAY);
     }
     
     void ResetBall()
     {
-        if (ball != null && level != null)
+        if (ball == null || level == null)
         {
-            ball.ResetPosition(level.GetStartPosition());
-            level.ResetHoleTriggers();
-            isGameRunning = true;
-            elapsedTime = 0f;
-            
-            // Reset UI
-            if (uiManager != null)
-            {
-                uiManager.ResetTimer();
-                uiManager.ShowStatus("SPIEL LÄUFT");
-            }
-            
-            Debug.Log("Ball zurückgesetzt, Spiel läuft weiter");
+            Debug.Log("GameManager: Der Ball oder Level kann nicht zurückgesetzt werden");
+            return;
         }
+            
+        InitializeLevel();
+        isGameRunning = true;
+        elapsedTime = 0f;
+        
+        // Reset UI
+        if (uiManager != null)
+        {
+            uiManager.ResetTimer();
+            uiManager.ShowStatus("SPIEL LÄUFT");
+        }
+        
+        Debug.Log("Ball zurückgesetzt, Spiel läuft weiter");
     }
     
-    public void WinLevel()
+    public void CompletedLevel()
     {
+        // Verhindere doppelte Aufrufe
+        if (hasWon)
+            return;
+
         hasWon = true;
         isGameRunning = false;
-        
-        Debug.Log("Level completed in " + elapsedTime.ToString("F2") + "s");
-        
+
+
         // Benachrichtige UI
         if (uiManager != null)
         {
             uiManager.OnLevelWon(elapsedTime);
         }
-        
+
         // Nach 2 Sekunden Menu zeigen
-        Invoke("ShowMenuAfterWin", 2f);
+        Invoke("ShowMenuAfterWin", WIN_MENU_DELAY);
     }
     
     void ShowMenuAfterWin()
@@ -149,5 +160,24 @@ public class GameManager : MonoBehaviour
         }
     }
     
-    public bool IsGameRunning => isGameRunning;
+    private void ResetGameState()
+    {
+        isGameRunning = false;
+        hasWon = false;
+        elapsedTime = 0f;
+    }
+
+    private void UpdateGameTime()
+    {
+        elapsedTime += Time.deltaTime;
+    }
+
+    private void CheckLevelCompletion()
+    {
+        if (level.CheckBallAtExit(ball.GetPosition()))
+        {
+            CompletedLevel();
+        }
+    }
+    
 }

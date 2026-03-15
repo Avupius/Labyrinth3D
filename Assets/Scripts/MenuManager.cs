@@ -20,29 +20,19 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private LabyrinthGenerator labyrinthGenerator;
     [SerializeField] private Level level;
     [SerializeField] private UIManager uiManager;
+    [SerializeField] private ScoreManager scoreManager;
     
-    private ScoreManager scoreManager;
-    private bool gameStarted = false;
-
     void Start()
     {
-        // Finde ScoreManager
-        scoreManager = FindObjectOfType<ScoreManager>();
         if (scoreManager == null)
         {
-            GameObject scoreManagerObj = new GameObject("ScoreManager");
-            scoreManager = scoreManagerObj.AddComponent<ScoreManager>();
+           Debug.LogError("MenuManager: ScoreManager nicht gesetzt");
         }
         
-        // Finde UIManager wenn nicht gesetzt
         if (uiManager == null)
         {
-            uiManager = FindObjectOfType<UIManager>();
+            Debug.LogError("MenuManager: UIManager nicht gesetzt");
         }
-        
-        // Beim Start: Menu zeigen, Spiel nicht starten
-        ShowMenu();
-        gameStarted = false;
         
         // Button-Events verbinden
         if (startGameButton != null)
@@ -54,6 +44,10 @@ public class MenuManager : MonoBehaviour
         {
             resetStatsButton.onClick.AddListener(ResetStats);
         }
+        
+        // Beim Start: Menu zeigen, Spiel nicht starten
+        ShowMenu();
+        
         
         // Zeige Statistiken
         UpdateStatisticsDisplay();
@@ -96,6 +90,10 @@ public class MenuManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Wird aufgerufen, wenn der Spieler "Start" drueckt.
+    /// Generiert das Labyrinth und startet das Spiel.
+    /// </summary>
     public void StartGameButtonPressed()
     {
         Debug.Log("=== SPIEL WIRD GESTARTET ===");
@@ -123,21 +121,14 @@ public class MenuManager : MonoBehaviour
         }
     }
 
-    public void QuitGame()
-    {
-        Debug.Log("Spiel wird beendet...");
     
-        #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-        #else
-                Application.Quit();
-        #endif
-    }
-    
+    /// <summary>
+    /// Wird vom GameManager aufgerufen, wenn das Spiel vorbei ist (Level gewonnen).
+    /// Zeigt das Menu wieder an.
+    /// </summary>
     public void GameOver()
     {
         Debug.Log("Spiel vorbei - Menu wird wieder angezeigt");
-        gameStarted = false;
         ShowMenu();
         
         // Aktualisiere Statistiken
@@ -181,5 +172,15 @@ public class MenuManager : MonoBehaviour
             UpdateStatisticsDisplay();
             Debug.Log("Alle Statistiken zurückgesetzt!");
         }
+    }
+    public void QuitGame()
+    {
+        Debug.Log("Spiel wird beendet...");
+    
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+        #else
+                Application.Quit();
+        #endif
     }
 }
