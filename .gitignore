@@ -34,8 +34,6 @@ ExportedObj/
 # Unity3D Generated File On Crash Reports
 sysinfo.txt
 
-# Builds
-*.apk
 
 #Unity Specific Folde (not important for import)
 /game_*/
